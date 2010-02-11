@@ -1,0 +1,195 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
+		<title>Translator</title>
+        <style>
+			.button {
+					height:50px;
+			}
+            
+			.split {
+				width:48%;
+                padding:5px;
+            }
+			
+			#input {
+				margin-top:20px;
+			}
+			
+			img {
+				vertical-align: middle;
+			}
+        </style>
+		<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="mobileTranslator.js"></script>
+</head>
+<body>
+	
+	<button id="inputLanguageSelector" class="button" style="width:35%"></button>
+	<img id="inputLanguage" src="images/undefined.png" />
+	
+	<button id="outputLanguageSelector" class="button" style="width:35%"></button>
+	<img id="outputLanguage" src="images/undefined.png" />
+	
+	<button id="translateButton" class="button split"></button>
+	<button id="switchTranslationButton" class="button split"></button>
+
+	<div id="input" style="height:60px"></div>
+	<div id="translation" style="height:50px"></div>
+    
+    		<script type="text/javascript">			
+			Titanium.UI.currentWindow.setTitle('Mobile Translator');
+			
+			mobileTranslator.database.init();
+			mobileTranslator.translator.init();
+			
+			var inputLanguage = null;
+			var outputLanguage = null;
+                                
+            var hint = Titanium.UI.createAlertDialog();
+			hint.setTitle('Attention');
+			hint.setButtonNames(['OK']);
+
+			var loader = Titanium.UI.createActivityIndicator({width:100});;
+            loader.setMessage('Translating...');
+            
+            if(Titanium.platform != 'iphone') {
+                loader.setLocation(Titanium.UI.ActivityIndicator.DIALOG);
+                loader.setType(Titanium.UI.ActivityIndicator.INDETERMINANT);
+            }
+            
+            var languageSelector = Titanium.UI.createOptionDialog();
+			languageSelector.setTitle('Choose language');
+			languageSelector.setCancel(2); // iPhone only
+			languageSelector.setOptions(mobileTranslator.translator.getSupportedLanguages());
+
+			var inputComponent = Titanium.UI.createTextField({
+				id:'input',
+                hintText:'Insert text to be translated',
+                enableReturnKey:false,
+                keyboardType:Titanium.UI.KEYBOARD_ASCII,
+                autocorrect:false,
+                textAlign:'left',
+                passwordMask:false,
+                clearOnEdit:true,
+                height:50,
+                borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			});
+			
+			var translationComponent = Titanium.UI.createTextField({
+				id:'translation', 
+				enableReturnKey:false,
+				keyboardType:Titanium.UI.KEYBOARD_ASCII,
+				autocorrect:false,
+				textAlign:'left',
+				height:50,
+				borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			});
+			
+			// Button to translate input
+			var translateButton = Titanium.UI.createButton({
+				id:'translateButton',
+				title:'Translate',
+                height:50,
+				fontSize:14,
+			});
+            
+            translateButton.addEventListener('click', function(e) {
+				if(outputLanguage == null) {
+					hint.setMessage('Please choose a translation language');
+					hint.show();
+					return;
+				}
+				
+                if(Titanium.platform == 'iphone') {
+                    Titanium.UI.currentWindow.setTitleControl(loader);
+                }
+				loader.show();
+				
+                if(inputLanguage == null) {
+					mobileTranslator.translator.detectLanguage(inputComponent.getValue(), function(result) {
+						if (!result.error && result.language) {
+							inputLanguage = result.language;
+							translate();
+						} else {
+							hint.setMessage("Language couldn't be detected");
+							hint.show();
+						}
+					});
+				} else {
+					translate();
+				}
+			})
+			
+			function translate() {
+				// Join text with empty string to get translation working
+				var text = inputComponent.getValue() + "";				
+				mobileTranslator.translator.translate(text, inputLanguage, outputLanguage, function(result) {
+	  				if (!result.error) {
+						translationComponent.setValue(result.translation);
+						mobileTranslator.database.insertTranslation(text, inputLanguage, result.translation, outputLanguage);
+					} else {
+						translationComponent.setValue(result.error);
+					}
+					loader.hide();
+				});
+			}
+			
+			// Button to switch translation
+			var switchTranslationButton = Titanium.UI.createButton({
+				id:'switchTranslationButton',
+				title:'Switch Translation',
+                height:50,
+				fontSize:14,
+			});
+			switchTranslationButton.addEventListener('click', function(e) {				
+				var currentInputLanguage = inputLanguage;
+				inputLanguage = outputLanguage;
+				outputLanguage = currentInputLanguage;
+				
+				// Visualize
+				if(inputLanguage == null) {
+					document.getElementById('inputLanguage').src='images/undefined.png';
+				} else {
+					document.getElementById('inputLanguage').src='images/' + inputLanguage + '.png';
+				}
+				if(outputLanguage == null) {
+					document.getElementById('outputLanguage').src='images/undefined.png';
+				} else {
+					document.getElementById('outputLanguage').src='images/' + outputLanguage + '.png';
+				}
+			})
+			
+			// Button to set input language
+			var inputLanguageSelector = Titanium.UI.createButton({
+				id:'inputLanguageSelector',
+				title: 'Input language',
+				fontSize:11,
+			});
+			inputLanguageSelector.addEventListener('click', function(e) {
+				var id = languageSelector.addEventListener('click',function(e) {
+					inputLanguage = mobileTranslator.translator.getLanguage(e.index);
+					document.getElementById('inputLanguage').src='images/' + inputLanguage + '.png';
+					languageSelector.removeEventListener('click', id);
+				});
+				languageSelector.show();
+			})
+			
+			// Button to set translation language 
+			var outputLanguageSelector = Titanium.UI.createButton({
+				id:'outputLanguageSelector',
+				title:'Output language',
+				fontSize:11,
+			});
+			outputLanguageSelector.addEventListener('click', function(e) {
+				var id = languageSelector.addEventListener('click',function(e) {
+					outputLanguage = mobileTranslator.translator.getLanguage(e.index);
+					document.getElementById('outputLanguage').src='images/' + outputLanguage + '.png';
+					languageSelector.removeEventListener('click', id);
+				});
+				languageSelector.show();
+			})
+		</script>
+	
+</body>
+</html>

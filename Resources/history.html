@@ -1,0 +1,24 @@
+<html>
+<head>
+	<script type="text/javascript" src="mobileTranslator.js"></script>
+	<script>
+		mobileTranslator.database.init();
+		
+		var translations = mobileTranslator.database.getTranslations();
+		var historyView = Titanium.UI.createTableView({
+			data: translations
+		}, function(e) {
+		    Titanium.UI.createAlertDialog({
+				'title':e.rowData.inputText, 
+				message:e.rowData.outputText
+			}).show(); 
+		});
+		
+		Titanium.UI.currentWindow.addView(historyView);
+		Titanium.UI.currentWindow.showView(historyView);
+	</script>
+</head>
+<body>
+
+</body>
+</html>
