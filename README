@@ -1,5 +1,11 @@
+Welcome to mobileTranslator!
+
+mobileTranslator is a mobile translation application using Google Translate and is based on Titanium Mobile. Therefore it runs smoothly on Android and iPhone. mobileTranslator is expeditious and covers a lot useful functions little a history of your translations.
+
+If you have any improvements you are welcome to contribute them.
+
 ----------------------------------
-Stuff our legal folk make us say:
+Some legal stuffe because this application is based on Titanium Mobile of Appcelerator:
 
 Appcelerator, Appcelerator Titanium and associated marks and logos are 
 trademarks of Appcelerator, Inc. 
@@ -8,4 +14,3 @@ Titanium is Copyright (c) 2009 by Appcelerator, Inc. All Rights Reserved.
 
 Titanium is licensed under the Apache Public License (Version 2). Please
 see the LICENSE file for the full license.
-
